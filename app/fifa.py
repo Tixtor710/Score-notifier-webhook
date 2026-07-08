@@ -35,11 +35,47 @@ def get_matches():
 
         response.raise_for_status()
 
+        data = response.json()
+
         logging.info(
             "Successfully retrieved data from FIFA API."
         )
 
-        return response.json()
+        logging.info(
+            "Response type: %s",
+            type(data).__name__,
+        )
+
+        if isinstance(data, dict):
+            logging.info(
+                "Top-level keys: %s",
+                list(data.keys()),
+            )
+
+            logging.info(
+                "Response preview: %s",
+                str(data)[:1000],
+            )
+
+        elif isinstance(data, list):
+            logging.info(
+                "Response is a list containing %d items.",
+                len(data),
+            )
+
+            if data:
+                logging.info(
+                    "First item preview: %s",
+                    str(data[0])[:1000],
+                )
+
+        else:
+            logging.info(
+                "Response preview: %s",
+                str(data)[:1000],
+            )
+
+        return data
 
     except requests.exceptions.Timeout:
         logging.exception(
