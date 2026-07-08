@@ -3,6 +3,7 @@ import logging
 import requests
 
 from app.config import FIFA_ENDPOINT
+from app.http import session
 
 
 HEADERS = {
@@ -19,10 +20,14 @@ HEADERS = {
 
 
 def get_matches():
-    """Fetch all World Cup matches from the FIFA API."""
+    """
+    Fetch all World Cup matches from the FIFA API.
+    """
+
+    logging.info("Requesting FIFA API...")
 
     try:
-        response = requests.get(
+        response = session.get(
             FIFA_ENDPOINT,
             headers=HEADERS,
             timeout=20,
