@@ -1,10 +1,14 @@
-import json
+import logging
+
 import requests
 
-from config import DISCORD_WEBHOOK
+from app.config import DISCORD_WEBHOOK
+from app.flags import get_flag
 
 
 def send_match_alert(match):
+    """Send a Discord notification for an upcoming match."""
+
     unix_time = int(match["kickoff"].timestamp())
 
     payload = {
@@ -36,29 +40,42 @@ def send_match_alert(match):
                     },
                 ],
                 "footer": {
-                    "text": "FIFA World Cup 2026",
+                    "text": "FIFA World Cup 2026"
                 },
             }
         ],
     }
 
-    print("\n========== SENDING TO DISCORD ==========")
-    print("Webhook:")
-    print(DISCORD_WEBHOOK)
-    print("\nPayload:")
-    print(json.dumps(payload, indent=4))
-
     try:
-        response = requests.post(DISCORD_WEBHOOK, json=payload)
-
-        print("\nStatus Code:", response.status_code)
-        print("Response Body:")
-        print(response.text)
+        response = requests.post(
+            DISCORD_WEBHOOK,
+            json=payload,
+            timeout=15,
+        )
 
         response.raise_for_status()
 
-        print("\n✅ Discord notification sent successfully.\n")
+        logging.info(
+            "Discord notification delivered successfully."
+        )
 
-    except Exception as e:
-        print("\n❌ Discord request failed")
-        print(e)
+    except requests.exceptions.Timeout:
+        logging.error(
+            "Discord webhook request timed out."
+        )
+        raise
+
+    except requests.exceptions.HTTPError:
+        logging.error(
+            "Discord returned %s: %s",
+            response.status_code,
+            response.text,
+        )
+        raise
+
+    except requests.exceptions.RequestException as exc:
+        logging.error(
+            "Failed to send Discord notification: %s",
+            exc,
+        )
+        raise
