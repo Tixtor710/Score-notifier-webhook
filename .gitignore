@@ -1,0 +1,21 @@
+# Virtual environments
+venv/
+.venv/
+lakaka/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
