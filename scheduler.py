@@ -11,6 +11,21 @@ from app.main import check_matches
 setup_logging()
 
 
+def startup_checks():
+    """
+    Perform startup validation before the scheduler begins.
+    """
+
+    logging.info("=" * 50)
+    logging.info("FIFA Discord Notifier")
+    logging.info("=" * 50)
+
+    logging.info("✓ Logging initialized")
+    logging.info("✓ Scheduler interval: %d minutes", CHECK_INTERVAL)
+
+    logging.info("Starting initial match check...")
+
+
 def job():
     try:
         check_matches()
@@ -20,18 +35,23 @@ def job():
         )
 
 
-logging.info("===================================")
-logging.info("FIFA Discord Notifier Started")
-logging.info(
-    "Checking every %d minutes...",
-    CHECK_INTERVAL,
-)
-logging.info("===================================")
+def run():
+    startup_checks()
 
-job()
+    # Run immediately
+    job()
 
-schedule.every(CHECK_INTERVAL).minutes.do(job)
+    logging.info(
+        "Scheduler started. Next check every %d minutes.",
+        CHECK_INTERVAL,
+    )
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    schedule.every(CHECK_INTERVAL).minutes.do(job)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+if __name__ == "__main__":
+    run()
