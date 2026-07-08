@@ -4,12 +4,18 @@ import requests
 
 from app.config import DISCORD_WEBHOOK
 from app.flags import get_flag
+from app.http import session
 
 
 def send_match_alert(match):
-    """Send a Discord notification for an upcoming match."""
+    """
+    Send a Discord notification for an upcoming FIFA World Cup match.
+    """
 
     unix_time = int(match["kickoff"].timestamp())
+
+    home_flag = get_flag(match["home"])
+    away_flag = get_flag(match["away"])
 
     payload = {
         "content": "@everyone",
@@ -17,9 +23,9 @@ def send_match_alert(match):
             {
                 "title": "⚽ FIFA World Cup Match Starting Soon",
                 "description": (
-                    f"**{match['home']}**\n"
+                    f"{home_flag} **{match['home']}**\n"
                     f"🆚\n"
-                    f"**{match['away']}**"
+                    f"{away_flag} **{match['away']}**"
                 ),
                 "color": 3447003,
                 "fields": [
@@ -35,19 +41,22 @@ def send_match_alert(match):
                     },
                     {
                         "name": "🕒 Kickoff",
-                        "value": f"<t:{unix_time}:F>",
+                        "value": (
+                            f"<t:{unix_time}:F>\n"
+                            f"<t:{unix_time}:R>"
+                        ),
                         "inline": True,
                     },
                 ],
                 "footer": {
-                    "text": "FIFA World Cup 2026"
+                    "text": "FIFA World Cup 2026",
                 },
             }
         ],
     }
 
     try:
-        response = requests.post(
+        response = session.post(
             DISCORD_WEBHOOK,
             json=payload,
             timeout=15,
@@ -60,22 +69,21 @@ def send_match_alert(match):
         )
 
     except requests.exceptions.Timeout:
-        logging.error(
+        logging.exception(
             "Discord webhook request timed out."
         )
         raise
 
     except requests.exceptions.HTTPError:
-        logging.error(
-            "Discord returned %s: %s",
+        logging.exception(
+            "Discord returned %s\n%s",
             response.status_code,
             response.text,
         )
         raise
 
-    except requests.exceptions.RequestException as exc:
-        logging.error(
-            "Failed to send Discord notification: %s",
-            exc,
+    except requests.exceptions.RequestException:
+        logging.exception(
+            "Unable to reach the Discord webhook."
         )
         raise
