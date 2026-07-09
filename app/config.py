@@ -37,6 +37,10 @@ CHECK_INTERVAL = int(
     os.getenv("CHECK_INTERVAL", "5")
 )
 
-# Debug output (temporary)
-print("Loaded FIFA endpoint:")
-print(repr(FIFA_ENDPOINT))
+logging_enabled = True
+
+if logging_enabled:
+    print("=" * 60)
+    print("DISCORD_WEBHOOK =", repr(DISCORD_WEBHOOK))
+    print("FIFA_ENDPOINT   =", repr(FIFA_ENDPOINT))
+    print("=" * 60)
